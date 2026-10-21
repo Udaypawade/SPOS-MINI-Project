@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeCare</title>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Clean Minimal Header (Title: SafeCare ONLY) -->
+    <header class="project-header">
+        <div class="header-content">
+            <h1 class="project-title">SafeCare</h1>
+            <div class="header-right">
+                <!-- Dark / Light Mode Toggle Button -->
+                <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle theme">
+                    <span class="theme-icon" id="themeIcon">☀️</span>
+                    <span id="themeText">Light Mode</span>
+                </button>
+
+                <!-- Current System State Badge -->
+                <div class="system-status-card" id="systemStatusCard">
+                    <div class="status-indicator-dot pulse"></div>
+                    <div class="status-info">
+                        <span class="status-label">SYSTEM STATE</span>
+                        <span class="status-value safe-text" id="systemStateText">SAFE STATE</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Resource Capacity & Available Summary Ribbon -->
+    <section class="kpi-ribbon">
+        <div class="kpi-item">
+            <div class="kpi-icon">🛏️</div>
+            <div class="kpi-data">
+                <span class="kpi-label">ICU Beds</span>
+                <span class="kpi-val" id="kpi-res-0">5 / 5 Avail</span>
+                <div class="mini-bar"><div class="mini-bar-fill" id="kpi-bar-0" style="width: 0%"></div></div>
+            </div>
+        </div>
+        <div class="kpi-item">
+            <div class="kpi-icon">🫁</div>
+            <div class="kpi-data">
+                <span class="kpi-label">Ventilators</span>
+                <span class="kpi-val" id="kpi-res-1">3 / 3 Avail</span>
+                <div class="mini-bar"><div class="mini-bar-fill" id="kpi-bar-1" style="width: 0%"></div></div>
+            </div>
+        </div>
+        <div class="kpi-item">
+            <div class="kpi-icon">💨</div>
+            <div class="kpi-data">
+                <span class="kpi-label">Oxygen Units</span>
+                <span class="kpi-val" id="kpi-res-2">4 / 4 Avail</span>
+                <div class="mini-bar"><div class="mini-bar-fill" id="kpi-bar-2" style="width: 0%"></div></div>
+            </div>
+        </div>
+        <div class="kpi-item">
+            <div class="kpi-icon">📟</div>
+            <div class="kpi-data">
+                <span class="kpi-label">Monitors</span>
+                <span class="kpi-val" id="kpi-res-3">6 / 6 Avail</span>
+                <div class="mini-bar"><div class="mini-bar-fill" id="kpi-bar-3" style="width: 0%"></div></div>
+            </div>
+        </div>
+        <div class="kpi-item sequence-kpi">
+            <div class="kpi-icon">🔄</div>
+            <div class="kpi-data">
+                <span class="kpi-label">Current Safe Sequence</span>
+                <span class="kpi-sequence" id="activeSafeSeqDisplay">P1 → P2 → P3 → P4 → P5</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" role="tablist">
+        <button class="tab-btn active" data-tab="tab-dashboard" id="btn-tab-dashboard">
+            <span class="tab-icon">📊</span> Matrix Calculator & Resources
+        </button>
+        <button class="tab-btn" data-tab="tab-safety" id="btn-tab-safety">
+            <span class="tab-icon">🛡️</span> Banker's Safety Inspector
+        </button>
+        <button class="tab-btn" data-tab="tab-manager" id="btn-tab-manager">
+            <span class="tab-icon">💉</span> Resource Request & Release
+        </button>
+        <button class="tab-btn" data-tab="tab-concurrency" id="btn-tab-concurrency">
+            <span class="tab-icon">🧵</span> Concurrency & Mutex Simulation
+        </button>
+        <button class="tab-btn" data-tab="tab-viva" id="btn-tab-viva">
+            <span class="tab-icon">📚</span> Theory & Concept Reference
+        </button>
+        <button class="tab-btn" data-tab="tab-terminal" id="btn-tab-terminal">
+            <span class="tab-icon">💻</span> SafeCare CLI Console
+        </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-container">
+
+        <!-- ================= TAB 1: DYNAMIC MATRIX CALCULATOR ================= -->
+        <section class="tab-content active" id="tab-dashboard">
+
+            <!-- Interactive Total Capacity Configuration Bar -->
+            <div class="capacity-config-bar">
+                <div class="config-title-group">
+                    <span class="config-icon">⚙️</span>
+                    <div>
+                        <h3 class="config-title">Total ICU Resource Capacities</h3>
+                        <span class="config-sub">Edit total available units in hospital system (Total Vector):</span>
+                    </div>
+                </div>
+                <div class="capacity-inputs-row">
+                    <div class="cap-input-item">
+                        <label for="totalBeds">🛏️ ICU Beds</label>
+                        <input type="number" id="totalBeds" min="1" max="99" value="5" class="total-res-input">
+                    </div>
+                    <div class="cap-input-item">
+                        <label for="totalVent">🫁 Ventilators</label>
+                        <input type="number" id="totalVent" min="1" max="99" value="3" class="total-res-input">
+                    </div>
+                    <div class="cap-input-item">
+                        <label for="totalOxy">💨 Oxygen Units</label>
+                        <input type="number" id="totalOxy" min="1" max="99" value="4" class="total-res-input">
+                    </div>
+                    <div class="cap-input-item">
+                        <label for="totalMon">📟 Monitors</label>
+                        <input type="number" id="totalMon" min="1" max="99" value="6" class="total-res-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Matrix Action Buttons & Presets -->
+            <div class="controls-toolbar">
+                <div class="toolbar-left">
+                    <span class="toolbar-title">📌 Quick Actions:</span>
+                    <button class="action-btn btn-primary" id="btn-add-patient">➕ Add Patient</button>
+                    <button class="chip-btn" id="scenario-initial" title="Reset to initial values in SafeCare.java">Reset to Java Defaults</button>
+                    <button class="chip-btn" id="scenario-moderate">Sample Safe Allocation</button>
+                    <button class="chip-btn chip-danger" id="scenario-deadlock-attempt">Trigger Unsafe Request</button>
+                    <button class="chip-btn" id="btn-clear-alloc">Clear Allocations</button>
+                </div>
+                <div class="toolbar-right">
+                    <button class="action-btn btn-success" id="btn-recalculate-all">⚡ Recalculate State</button>
+                </div>
+            </div>
+
+            <!-- Dynamic Banker's Allocation & Need Table -->
+            <div class="table-container">
+                <div class="table-header-bar">
+                    <div class="th-title-group">
+                        <h2 class="section-title">📋 Dynamic Banker's State Matrix</h2>
+                        <span class="formula-tag">Need[i][j] = Max[i][j] - Allocation[i][j]</span>
+                    </div>
+                    <div class="vector-display">
+                        <span class="vec-label">Total =</span>
+                        <code class="vec-box" id="totalVectorDisplay">[5, 3, 4, 6]</code>
+                        <span class="vec-label" style="margin-left: 12px;">Available =</span>
+                        <code class="vec-box highlight-avail" id="availVectorText">[5, 3, 4, 6]</code>
+                    </div>
+                </div>
+
+                <div class="responsive-table-wrapper">
+                    <table class="bankers-table" id="bankersMatrixTable">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" class="col-patient">Patient</th>
+                                <th colspan="4" class="col-header-group col-max">Maximum Need (Max)</th>
+                                <th colspan="4" class="col-header-group col-alloc">Current Allocation (Alloc)</th>
+                                <th colspan="4" class="col-header-group col-need">Remaining Need (Need)</th>
+                                <th rowspan="2" class="col-status">Status</th>
+                                <th rowspan="2" class="col-action">Action</th>
+                            </tr>
+                            <tr class="sub-headers">
+                                <!-- Max sub-headers -->
+                                <th>Beds</th><th>Vent</th><th>O₂</th><th>Mon</th>
+                                <!-- Alloc sub-headers -->
+                                <th>Beds</th><th>Vent</th><th>O₂</th><th>Mon</th>
+                                <!-- Need sub-headers -->
+                                <th>Beds</th><th>Vent</th><th>O₂</th><th>Mon</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bankersTableBody">
+                            <!-- Dynamically generated rows with editable inputs -->
+                        </tbody>
+                        <tfoot>
+                            <tr class="tfoot-totals">
+                                <td class="patient-cell"><strong>Total Allocated</strong></td>
+                                <td colspan="4" class="matrix-cell text-muted">-</td>
+                                <td class="matrix-cell cell-alloc" id="tot-alloc-0">0</td>
+                                <td class="matrix-cell cell-alloc" id="tot-alloc-1">0</td>
+                                <td class="matrix-cell cell-alloc" id="tot-alloc-2">0</td>
+                                <td class="matrix-cell cell-alloc" id="tot-alloc-3">0</td>
+                                <td colspan="4" class="matrix-cell text-muted">-</td>
+                                <td colspan="2"><span class="badge-foot" id="capacityCheckBadge">Capacity Normal</span></td>
+                            </tr>
+                            <tr class="tfoot-available">
+                                <td class="patient-cell"><strong>Current Available</strong></td>
+                                <td colspan="4" class="matrix-cell text-muted">-</td>
+                                <td class="matrix-cell cell-avail" id="cur-avail-0">5</td>
+                                <td class="matrix-cell cell-avail" id="cur-avail-1">3</td>
+                                <td class="matrix-cell cell-avail" id="cur-avail-2">4</td>
+                                <td class="matrix-cell cell-avail" id="cur-avail-3">6</td>
+                                <td colspan="4" class="matrix-cell text-muted">-</td>
+                                <td colspan="2"><span class="badge-foot safe-chip" id="availStateChip">All Resources Ready</span></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="table-legend">
+                    <div class="legend-item"><span class="legend-chip max-chip"></span> <strong>Maximum (Max):</strong> Edit peak claim needed by patient.</div>
+                    <div class="legend-item"><span class="legend-chip alloc-chip"></span> <strong>Allocation (Alloc):</strong> Edit units currently held.</div>
+                    <div class="legend-item"><span class="legend-chip need-chip"></span> <strong>Need:</strong> Automatically computed ($Max - Alloc$).</div>
+                    <div class="legend-item"><span class="legend-chip avail-chip"></span> <strong>Available:</strong> Automatically computed ($Total - \sum Alloc$).</div>
+                </div>
+            </div>
+
+            <!-- Resource Cards Grid -->
+            <div class="resource-grid">
+                <!-- Card 1: ICU Beds -->
+                <div class="res-card">
+                    <div class="res-card-top">
+                        <div class="res-type-info">
+                            <span class="res-icon">🛏️</span>
+                            <div>
+                                <h3 class="res-name">ICU Beds</h3>
+                                <span class="res-index">Resource R1</span>
+                            </div>
+                        </div>
+                        <span class="res-total-badge" id="card-badge-0">Total: 5</span>
+                    </div>
+                    <div class="res-stat-row">
+                        <div class="stat-box">
+                            <span class="stat-label">Allocated</span>
+                            <span class="stat-value text-allocated" id="card-alloc-0">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Available</span>
+                            <span class="stat-value text-available" id="card-avail-0">5</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Utilization</span>
+                            <span class="stat-value" id="card-util-0">0%</span>
+                        </div>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="card-bar-0" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Ventilators -->
+                <div class="res-card">
+                    <div class="res-card-top">
+                        <div class="res-type-info">
+                            <span class="res-icon">🫁</span>
+                            <div>
+                                <h3 class="res-name">Ventilators</h3>
+                                <span class="res-index">Resource R2</span>
+                            </div>
+                        </div>
+                        <span class="res-total-badge" id="card-badge-1">Total: 3</span>
+                    </div>
+                    <div class="res-stat-row">
+                        <div class="stat-box">
+                            <span class="stat-label">Allocated</span>
+                            <span class="stat-value text-allocated" id="card-alloc-1">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Available</span>
+                            <span class="stat-value text-available" id="card-avail-1">3</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Utilization</span>
+                            <span class="stat-value" id="card-util-1">0%</span>
+                        </div>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="card-bar-1" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Oxygen Units -->
+                <div class="res-card">
+                    <div class="res-card-top">
+                        <div class="res-type-info">
+                            <span class="res-icon">💨</span>
+                            <div>
+                                <h3 class="res-name">Oxygen Units</h3>
+                                <span class="res-index">Resource R3</span>
+                            </div>
+                        </div>
+                        <span class="res-total-badge" id="card-badge-2">Total: 4</span>
+                    </div>
+                    <div class="res-stat-row">
+                        <div class="stat-box">
+                            <span class="stat-label">Allocated</span>
+                            <span class="stat-value text-allocated" id="card-alloc-2">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Available</span>
+                            <span class="stat-value text-available" id="card-avail-2">4</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Utilization</span>
+                            <span class="stat-value" id="card-util-2">0%</span>
+                        </div>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="card-bar-2" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Monitoring Devices -->
+                <div class="res-card">
+                    <div class="res-card-top">
+                        <div class="res-type-info">
+                            <span class="res-icon">📟</span>
+                            <div>
+                                <h3 class="res-name">Monitoring Devices</h3>
+                                <span class="res-index">Resource R4</span>
+                            </div>
+                        </div>
+                        <span class="res-total-badge" id="card-badge-3">Total: 6</span>
+                    </div>
+                    <div class="res-stat-row">
+                        <div class="stat-box">
+                            <span class="stat-label">Allocated</span>
+                            <span class="stat-value text-allocated" id="card-alloc-3">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Available</span>
+                            <span class="stat-value text-available" id="card-avail-3">6</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Utilization</span>
+                            <span class="stat-value" id="card-util-3">0%</span>
+                        </div>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="card-bar-3" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Utilization Details -->
+            <div class="utilization-summary-card">
+                <div class="util-header">
+                    <h3>📈 Overall ICU Resource Utilization Report (Menu Option 6)</h3>
+                    <span class="util-subtitle">Calculated dynamically matching <code>SafeCare.utilizationReport()</code></span>
+                </div>
+                <div class="util-bars-container" id="utilReportContainer">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: SAFETY ALGORITHM INSPECTOR ================= -->
+        <section class="tab-content" id="tab-safety">
+            <div class="safety-hero">
+                <div class="safety-hero-left">
+                    <h2>🛡️ Banker's Safety Algorithm Step-by-Step Inspector</h2>
+                    <p>
+                        Visual trace of Dijkstra's Safety Algorithm (corresponding to <code>SafeCare.isSafe(true)</code>). 
+                        It tests if all active patients can finish without a deadlock by finding at least one valid Safe Sequence.
+                    </p>
+                    <div class="safety-controls">
+                        <button class="action-btn btn-primary" id="btn-run-safety-audit">▶ Run Complete Safety Audit</button>
+                        <button class="action-btn btn-secondary" id="btn-step-safety-audit">⏭ Step-by-Step Simulation</button>
+                        <button class="action-btn btn-outline" id="btn-reset-safety-audit">↺ Reset Visualizer</button>
+                    </div>
+                </div>
+                <div class="safety-hero-right">
+                    <div class="safety-result-box" id="safetySummaryResult">
+                        <div class="result-badge safe-badge" id="safetyStatusPill">STATE: SAFE</div>
+                        <div class="result-seq-row">
+                            <span class="result-label">Identified Safe Sequence:</span>
+                            <div class="seq-tokens" id="safetySeqTokens">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Work & Finish Vector Tracker -->
+            <div class="work-vector-tracker">
+                <div class="work-header">
+                    <h3>⚡ Safety Vector State Tracker</h3>
+                    <span class="step-counter" id="safetyStepCounter">Step: Ready to run</span>
+                </div>
+                <div class="vectors-row">
+                    <div class="vec-card">
+                        <span class="vc-title">Work Vector (Simulated Available)</span>
+                        <div class="vc-value" id="traceWorkVector">[5, 3, 4, 6]</div>
+                        <span class="vc-note">Formula: Work<sub>new</sub> = Work<sub>old</sub> + Allocation<sub>i</sub></span>
+                    </div>
+                    <div class="vec-card">
+                        <span class="vc-title">Finish Vector (Process Completion Status)</span>
+                        <div class="vc-value" id="traceFinishVector">[F, F, F, F, F]</div>
+                        <span class="vc-note">True when Need[i] ≤ Work and resources reclaimed</span>
+                    </div>
+                    <div class="vec-card">
+                        <span class="vc-title">Completed Count</span>
+                        <div class="vc-value" id="traceCount">0 / 5 Patients</div>
+                        <span class="vc-note">Algorithm terminates successfully when count = N</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Step Timeline / Process Check Cards -->
+            <div class="process-check-container">
+                <h3 class="section-title">🔍 Process Evaluation Trace (Loop Iterations)</h3>
+                <div class="process-cards-grid" id="safetyProcessCards">
+                    <!-- Cards generated by JS -->
+                </div>
+            </div>
+
+            <!-- Detailed Step-by-Step Mathematical Computation Log -->
+            <div class="safety-log-card">
+                <div class="sl-header">
+                    <h4>📝 Mathematical Step-by-Step Proof Log (Exact Console Output)</h4>
+                    <button class="copy-btn" id="btn-copy-safety-log">📋 Copy Proof</button>
+                </div>
+                <pre class="safety-code-log" id="safetyAuditLog">Click "Run Complete Safety Audit" or "Step-by-Step Simulation" above to view detailed mathematical verification.</pre>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: REQUEST & RELEASE MANAGER ================= -->
+        <section class="tab-content" id="tab-manager">
+            <div class="manager-layout">
+                <!-- Left: Resource Request Form -->
+                <div class="manager-card request-card">
+                    <div class="card-title-row">
+                        <span class="card-icon">📥</span>
+                        <div>
+                            <h3>Request Resources (Banker's Algorithm)</h3>
+                            <span class="card-subtitle">Tests Banker's conditions & performs tentative allocation with rollback</span>
+                        </div>
+                    </div>
+
+                    <form id="resourceRequestForm" onsubmit="return false;">
+                        <div class="form-group">
+                            <label for="reqPatientSelect"><strong>1. Select Requesting Patient / Process:</strong></label>
+                            <select id="reqPatientSelect" class="form-select">
+                                <!-- Populated dynamically based on patients -->
+                            </select>
+                        </div>
+
+                        <!-- Current Selected Patient Status Box -->
+                        <div class="patient-status-box" id="reqPatientOverview">
+                            <div class="pstat-header">
+                                <span class="pstat-title" id="pstatName">Patient P1</span>
+                                <span class="pstat-badge" id="pstatBadge">Active</span>
+                            </div>
+                            <div class="pstat-grid">
+                                <div>Max Claim: <code id="pstatMax">[1, 1, 1, 2]</code></div>
+                                <div>Allocated: <code id="pstatAlloc">[0, 0, 0, 0]</code></div>
+                                <div>Remaining Need: <code id="pstatNeed" class="highlight-need">[1, 1, 1, 2]</code></div>
+                                <div>System Available: <code id="pstatAvail" class="highlight-avail">[5, 3, 4, 6]</code></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label><strong>2. Specify Requested Quantities:</strong></label>
+                            <div class="resource-inputs-grid">
+                                <div class="res-input-box">
+                                    <label for="reqBeds">🛏️ ICU Beds</label>
+                                    <input type="number" id="reqBeds" min="0" value="0" class="res-num-input">
+                                    <span class="input-limit" id="limitBeds">Need: 1 | Avail: 5</span>
+                                </div>
+                                <div class="res-input-box">
+                                    <label for="reqVent">🫁 Ventilators</label>
+                                    <input type="number" id="reqVent" min="0" value="0" class="res-num-input">
+                                    <span class="input-limit" id="limitVent">Need: 1 | Avail: 3</span>
+                                </div>
+                                <div class="res-input-box">
+                                    <label for="reqOxy">💨 Oxygen Units</label>
+                                    <input type="number" id="reqOxy" min="0" value="0" class="res-num-input">
+                                    <span class="input-limit" id="limitOxy">Need: 1 | Avail: 4</span>
+                                </div>
+                                <div class="res-input-box">
+                                    <label for="reqMon">📟 Monitors</label>
+                                    <input type="number" id="reqMon" min="0" value="0" class="res-num-input">
+                                    <span class="input-limit" id="limitMon">Need: 2 | Avail: 6</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Validation Live Check Banners -->
+                        <div class="checks-banner-group">
+                            <div class="check-item" id="checkNeedBanner">
+                                <span class="check-icon">✓</span>
+                                <span class="check-text">Condition 1: Request ≤ Need</span>
+                            </div>
+                            <div class="check-item" id="checkAvailBanner">
+                                <span class="check-icon">✓</span>
+                                <span class="check-text">Condition 2: Request ≤ Available</span>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="action-btn btn-success" id="btn-submit-request">
+                                🚀 Submit Request (Safety Check & Allocate)
+                            </button>
+                            <button type="button" class="action-btn btn-outline" id="btn-fill-max-need">
+                                ⚡ Request Entire Remaining Need
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Request Result Feedback Box -->
+                    <div class="decision-feedback-box" id="requestDecisionBox" style="display: none;">
+                        <div class="df-icon" id="dfIcon">✅</div>
+                        <div class="df-content">
+                            <h4 id="dfTitle">REQUEST ACCEPTED</h4>
+                            <p id="dfMessage">Tentative allocation produced a valid Safe Sequence. Resources successfully granted.</p>
+                            <div class="df-seq" id="dfSeq">Safe Sequence: P1 → P2 → P3 → P4 → P5</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Resource Release Form -->
+                <div class="manager-card release-card">
+                    <div class="card-title-row">
+                        <span class="card-icon">📤</span>
+                        <div>
+                            <h3>Release Resources</h3>
+                            <span class="card-subtitle">Frees resources held by patient back into the ICU Available pool</span>
+                        </div>
+                    </div>
+
+                    <form id="resourceReleaseForm" onsubmit="return false;">
+                        <div class="form-group">
+                            <label for="relPatientSelect"><strong>1. Select Patient Discharging / Releasing Units:</strong></label>
+                            <select id="relPatientSelect" class="form-select">
+                                <!-- Populated dynamically based on patients -->
+                            </select>
+                        </div>
+
+                        <!-- Current Allocation Display for selected patient -->
+                        <div class="patient-status-box" id="relPatientOverview">
+                            <div class="pstat-header">
+                                <span class="pstat-title" id="relPstatName">Patient P1</span>
+                                <span class="pstat-badge" style="background: rgba(0, 230, 118, 0.15); color: #00e676;">Active</span>
+                            </div>
+                            <div class="pstat-grid">
+                                <div>Held Allocation: <code id="relPstatAlloc" class="highlight-alloc">[0, 0, 0, 0]</code></div>
+                                <div>Maximum Claim: <code id="relPstatMax">[1, 1, 1, 2]</code></div>
+                                <div>Current Available: <code id="relPstatAvail">[5, 3, 4, 6]</code></div>
+                                <div>Remaining Need: <code id="relPstatNeed">[1, 1, 1, 2]</code></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label><strong>2. Enter Quantities to Release (0 ≤ Release ≤ Allocation):</strong></label>
+                            <div class="resource-inputs-grid">
+                                <div class="res-input-box">
+                                    <label for="relBeds">🛏️ ICU Beds</label>
+                                    <input type="number" id="relBeds" min="0" value="0" class="res-num-input">
+                                    <span class="input-limit" id="relLimitBeds">Held: 0</span>
+                                </div>
+                                <div class="res-input-box">
+                                    <label for="relVent">🫁 Ventilators</label>
+                                    <input type="number" id="relVent" min="0" value="0" class="res-num-input">
+                                    <span class="input-limit" id="relLimitVent">Held: 0</span>
+                                </div>
+                                <div class="res-input-box">
+                                    <label for="relOxy">💨 Oxygen Units</label>
+                                    <input type="number" id="relOxy" min="0" value="0" class="res-num-input">
+                                    <span class="input-limit" id="relLimitOxy">Held: 0</span>
+                                </div>
+                                <div class="res-input-box">
+                                    <label for="relMon">📟 Monitors</label>
+                                    <input type="number" id="relMon" min="0" value="0" class="res-num-input">
+                                    <span class="input-limit" id="relLimitMon">Held: 0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="action-btn btn-warning" id="btn-submit-release">
+                                📤 Release Specified Resources
+                            </button>
+                            <button type="button" class="action-btn btn-outline" id="btn-release-all">
+                                🔄 Release All Held Resources
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Release Feedback Box -->
+                    <div class="decision-feedback-box" id="releaseDecisionBox" style="display: none;">
+                        <div class="df-icon">✨</div>
+                        <div class="df-content">
+                            <h4 id="relDfTitle">RESOURCES RELEASED</h4>
+                            <p id="relDfMessage">Resources successfully returned to the available hospital pool.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: CONCURRENCY & MUTEX SIMULATION ================= -->
+        <section class="tab-content" id="tab-concurrency">
+            <div class="concurrency-hero">
+                <div class="conc-header-info">
+                    <h2>🧵 Multi-Threaded Concurrency & Mutex Lock Simulator</h2>
+                    <p>
+                        Interactive visualizer demonstrating <code>simulateConcurrentRequests()</code> in <code>SafeCare.java</code>.
+                        Two worker threads (Thread 1 and Thread 2) compete for the shared <code>SafeCare.class</code> monitor lock 
+                        to prevent race conditions in resource allocation.
+                    </p>
+                </div>
+                <div class="conc-controls">
+                    <button class="action-btn btn-primary" id="btn-start-threads">▶ Launch Concurrent Threads</button>
+                    <button class="action-btn btn-secondary" id="btn-step-threads">⏭ Step One Instruction</button>
+                    <button class="action-btn btn-outline" id="btn-reset-threads">↺ Reset Thread Arena</button>
+                </div>
+            </div>
+
+            <!-- Mutex Lock Arena -->
+            <div class="mutex-arena">
+                <!-- Thread 1 Pod -->
+                <div class="thread-pod" id="threadPod1">
+                    <div class="pod-header">
+                        <span class="thread-indicator" id="t1Dot"></span>
+                        <h4>Thread 1 (Ward A Request)</h4>
+                        <span class="thread-state-badge" id="t1State">IDLE</span>
+                    </div>
+                    <div class="thread-code-snippet">
+                        <code>Thread t1 = new Thread(() -> {<br>
+                        &nbsp;&nbsp;synchronized(SafeCare.class) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;// Acquired Lock<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;processRequest(P1);<br>
+                        &nbsp;&nbsp;}<br>
+                        });</code>
+                    </div>
+                    <div class="thread-metrics">
+                        <span>Status: <strong id="t1StatusText">Not Started</strong></span>
+                        <span>Lock Status: <strong id="t1LockStatus">None</strong></span>
+                    </div>
+                </div>
+
+                <!-- Mutex Center (Lock & Critical Section) -->
+                <div class="mutex-center">
+                    <div class="mutex-lock-box" id="mutexLockBox">
+                        <div class="lock-graphic" id="lockIcon">🔓</div>
+                        <div class="lock-title">Shared Monitor Lock</div>
+                        <div class="lock-sub" id="lockOwnerText">STATUS: UNLOCKED</div>
+                    </div>
+
+                    <div class="critical-section-box" id="criticalSectionBox">
+                        <div class="cs-badge">CRITICAL SECTION</div>
+                        <div class="cs-desc">SafeCare Resource Allocation Engine</div>
+                        <div class="cs-active-thread" id="csActiveThread">Active: None (Free)</div>
+                    </div>
+                </div>
+
+                <!-- Thread 2 Pod -->
+                <div class="thread-pod" id="threadPod2">
+                    <div class="pod-header">
+                        <span class="thread-indicator" id="t2Dot"></span>
+                        <h4>Thread 2 (Ward B Request)</h4>
+                        <span class="thread-state-badge" id="t2State">IDLE</span>
+                    </div>
+                    <div class="thread-code-snippet">
+                        <code>Thread t2 = new Thread(() -> {<br>
+                        &nbsp;&nbsp;synchronized(SafeCare.class) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;// Acquired Lock<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;processRequest(P2);<br>
+                        &nbsp;&nbsp;}<br>
+                        });</code>
+                    </div>
+                    <div class="thread-metrics">
+                        <span>Status: <strong id="t2StatusText">Not Started</strong></span>
+                        <span>Lock Status: <strong id="t2LockStatus">None</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thread Execution Timeline & Console -->
+            <div class="thread-timeline-card">
+                <div class="tt-header">
+                    <h3>⏱️ Concurrent Execution Timeline & Mutex State Transitions</h3>
+                    <span class="tt-sub">Ensures Mutual Exclusion: Only ONE thread enters the Critical Section at a time</span>
+                </div>
+                <div class="timeline-log-list" id="threadTimelineLog">
+                    <div class="timeline-empty">Click "Launch Concurrent Threads" to begin the synchronized execution demonstration.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 5: THEORY & LAB NOTES ================= -->
+        <section class="tab-content" id="tab-viva">
+            <div class="viva-container">
+                <div class="viva-header">
+                    <h2>📚 SafeCare Conceptual Reference</h2>
+                    <p>Core Operating System concepts, Banker's algorithm mathematical rules, and deadlock avoidance principles.</p>
+                </div>
+
+                <div class="viva-grid">
+                    <!-- Q1 -->
+                    <div class="viva-card">
+                        <div class="viva-q">
+                            <span class="q-badge">1</span>
+                            <h3>What is Dijkstra's Banker's Algorithm?</h3>
+                        </div>
+                        <div class="viva-a">
+                            <p>
+                                The <strong>Banker's Algorithm</strong> is a classic deadlock avoidance algorithm developed by Edsger Dijkstra. 
+                                It is modeled after a banker who never allocates cash exceeding the available pool in a way that prevents satisfying the maximum needs of every client.
+                            </p>
+                            <p>
+                                In <strong>SafeCare</strong>, it ensures that hospital ICU critical care resources (Beds, Ventilators, Oxygen, Monitors) are never granted to patients if doing so leaves the hospital in an <strong>Unsafe State</strong> where a deadlock could occur.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Q2 -->
+                    <div class="viva-card">
+                        <div class="viva-q">
+                            <span class="q-badge">2</span>
+                            <h3>Safe State vs Unsafe State</h3>
+                        </div>
+                        <div class="viva-a">
+                            <p>
+                                <strong>Safe State:</strong> A state is safe if there exists at least one <em>Safe Sequence</em> $\langle P_1, P_2, \dots, P_n \rangle$ such that for every $P_i$, the resources that $P_i$ still needs can be satisfied by current Available plus resources currently held by all preceding processes $P_j$ ($j < i$).
+                            </p>
+                            <p>
+                                <strong>Unsafe State:</strong> No safe sequence exists. An unsafe state is not necessarily a deadlock, but it is a state that <strong>may lead to deadlock</strong> if processes request their maximum claims.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Q3 -->
+                    <div class="viva-card">
+                        <div class="viva-q">
+                            <span class="q-badge">3</span>
+                            <h3>The Four Coffman Conditions</h3>
+                        </div>
+                        <div class="viva-a">
+                            <ul class="coffman-list">
+                                <li><strong>1. Mutual Exclusion:</strong> Resources are held in non-shareable mode.</li>
+                                <li><strong>2. Hold and Wait:</strong> Processes hold resources while waiting for more.</li>
+                                <li><strong>3. No Preemption:</strong> Resources cannot be forcibly revoked.</li>
+                                <li><strong>4. Circular Wait:</strong> A closed chain of processes each waiting for resources held by the next.</li>
+                            </ul>
+                            <p class="highlight-box">
+                                SafeCare uses <strong>Deadlock Avoidance</strong>, which dynamically checks resource requests to ensure Circular Wait can never materialize.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Q4 -->
+                    <div class="viva-card">
+                        <div class="viva-q">
+                            <span class="q-badge">4</span>
+                            <h3>Resource-Request Algorithm Steps</h3>
+                        </div>
+                        <div class="viva-a">
+                            <ol class="steps-list">
+                                <li><strong>Condition 1:</strong> $Request_i \le Need_i$ (Cannot exceed remaining need).</li>
+                                <li><strong>Condition 2:</strong> $Request_i \le Available$ (Cannot exceed available pool).</li>
+                                <li><strong>Tentative Allocation:</strong> Temporarily grant $Allocation = Allocation + Request$ and $Available = Available - Request$.</li>
+                                <li><strong>Safety Check:</strong> Run Safety Algorithm. If safe, finalize. If unsafe, <strong>rollback</strong> to prior state.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 6: TERMINAL / CLI ================= -->
+        <section class="tab-content" id="tab-terminal">
+            <div class="terminal-container">
+                <div class="terminal-bar">
+                    <div class="terminal-dots">
+                        <span class="t-dot red"></span>
+                        <span class="t-dot yellow"></span>
+                        <span class="t-dot green"></span>
+                    </div>
+                    <div class="terminal-title">SafeCare Virtual Console - [java SafeCare]</div>
+                    <div class="terminal-actions">
+                        <button class="t-btn" id="btn-copy-terminal">Copy Output</button>
+                        <button class="t-btn" id="btn-clear-terminal">Clear Terminal</button>
+                    </div>
+                </div>
+                <div class="terminal-body" id="terminalOutput">
+                    <div class="term-line term-sys">SafeCare Interactive Console Session initialized.</div>
+                    <div class="term-line term-sys">Loaded configuration from SafeCare.java: 4 Resources.</div>
+                    <div class="term-line term-sys">Type commands or use UI buttons above to trigger SafeCare menu methods.</div>
+                    <div class="term-line">&nbsp;</div>
+                </div>
+                <div class="terminal-input-bar">
+                    <span class="term-prompt">SafeCare&gt;</span>
+                    <input type="text" id="terminalInput" class="term-input" placeholder="Type menu option (1-8) or command (help, resources, table, safe, concurrency)..." autocomplete="off">
+                    <button class="term-send-btn" id="btn-terminal-exec">Run</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Clean Footer -->
+    <footer class="project-footer">
+        <div class="footer-inner">
+            <div class="footer-left">
+                <strong>SafeCare</strong> • Hospital ICU Deadlock Avoidance Simulator
+            </div>
+            <div class="footer-right">
+                <span class="footer-tag">Banker's Algorithm</span>
+                <span class="footer-tag">Java Core (SafeCare.java)</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Core Script -->
+    <script src="script.js"></script>
+</body>
+</html>
