@@ -77,16 +77,3 @@ java SafeCare
 ```
 
 ---
-
-## 🎯 Viva & Examination Highlights (B.Tech 3rd Year SPOS)
-
-1. **What is Banker's Algorithm?**
-   - A deadlock avoidance algorithm that simulates tentative resource allocations and verifies if a system remains in a safe state before granting resources.
-2. **Safe State vs Unsafe State:**
-   - A state is safe if there exists at least one sequence of processes $\langle P_1, P_2, \dots, P_n \rangle$ such that every process can satisfy its maximum demand using currently available units plus units freed by prior processes.
-   - An unsafe state is not necessarily deadlocked, but may lead to deadlock if processes request their maximum claim simultaneously.
-3. **Difference between Deadlock Avoidance and Prevention:**
-   - *Prevention* statically constrains how requests can be made by breaking at least one of the 4 Coffman conditions (e.g., spooling, preemption, resource ordering).
-   - *Avoidance* dynamically inspects every request at runtime using state algorithms like Banker's.
-4. **Why is synchronization required?**
-   - Multi-threaded environments (such as multiple wards making concurrent bed/ventilator requests) risk race conditions where two threads allocate the same available unit simultaneously. `synchronized(SafeCare.class)` ensures atomicity.
